@@ -157,7 +157,7 @@ function App() {
       <section className="guide"><h2>What calculators can—and can&apos;t—decide</h2><div><p><strong>Use your eyes for:</strong> temperature, retraction, tolerance, VFA, and the best-looking band of a calibration print.</p><p><strong>Use this page for:</strong> the small, easy-to-mistype calculations after you&apos;ve made that judgment.</p></div></section>
       <section className="support" aria-label="Support TunePrint">
         <p>This tool stays free and runs entirely in your browser.</p>
-        <a href="https://ko-fi.com/cdracars66494" target="_blank" rel="noreferrer">If it saved you time, leave a tip on Ko-fi ↗</a>
+        <a href="https://ko-fi.com/cdracars66494" target="_blank" rel="noreferrer"><img src="https://storage.ko-fi.com/cdn/cup-border.png" alt="" />If it saved you time, leave a tip on Ko-fi ↗</a>
       </section>
       <footer><span>Unofficial calculation companion, based on the <a href="https://github.com/OrcaSlicer/OrcaSlicer/wiki/Calibration" target="_blank" rel="noreferrer">OrcaSlicer Calibration Guide</a>.</span><a href="https://github.com/OrcaSlicer/OrcaSlicer/wiki/Calibration" target="_blank" rel="noreferrer">Official guide ↗</a></footer>
     </main>
