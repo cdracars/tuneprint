@@ -2,7 +2,7 @@
 
 A browser-only companion for manual OrcaSlicer calibration.
 
-**Live site:** [tuneprint.dracarsfamily.workers.dev](https://tuneprint.dracarsfamily.workers.dev)
+**Live site:** [tuneprint.dracars.com](https://tuneprint.dracars.com)
 
 TunePrint converts the result you selected from an OrcaSlicer calibration print into the value to save for:
 
@@ -24,5 +24,7 @@ npm run dev
 ```
 
 Build a production bundle with `npm run build`.
+
+Deploy the production bundle to Cloudflare Workers with `npm run deploy`.
 
 No calibration inputs are sent to a server.
