@@ -28,3 +28,8 @@ Build a production bundle with `npm run build`.
 Deploy the production bundle to Cloudflare Workers with `npm run deploy`.
 
 No calibration inputs are sent to a server.
+
+## Support
+
+If TunePrint is useful to you, you can support its continued upkeep on
+[Ko-fi](https://ko-fi.com/cdracars66494).
