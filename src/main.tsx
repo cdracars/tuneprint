@@ -136,6 +136,13 @@ function App() {
           <a href="https://layercalc.com/e-steps-calculator/" target="_blank" rel="noreferrer">Open LayerCalc <b>↗</b></a>
         </aside>
       </section>
+      <section className="official-guide" aria-label="Official OrcaSlicer calibration guide">
+        <div>
+          <span>Use the original guide</span>
+          <p>TunePrint only handles the follow-up math. OrcaSlicer&apos;s calibration guide explains how to run, read, and validate every test.</p>
+        </div>
+        <a href="https://github.com/OrcaSlicer/OrcaSlicer/wiki/Calibration" target="_blank" rel="noreferrer">Open the official OrcaSlicer calibration guide <b>↗</b></a>
+      </section>
       <section className="workspace" aria-label="OrcaSlicer calibration calculators">
         <nav aria-label="Choose a calculator">
           {calculators.map((calculator) => <button className={active === calculator.id ? 'selected' : ''} onClick={() => setActive(calculator.id)} key={calculator.id}><strong>{calculator.label}</strong><span>{calculator.detail}</span></button>)}
@@ -152,7 +159,7 @@ function App() {
         <p>This tool stays free and runs entirely in your browser.</p>
         <a href="https://ko-fi.com/cdracars66494" target="_blank" rel="noreferrer">If it saved you time, leave a tip on Ko-fi ↗</a>
       </section>
-      <footer><span>Unofficial companion for manual OrcaSlicer calibration.</span><a href="https://github.com/OrcaSlicer/OrcaSlicer/wiki/Calibration" target="_blank" rel="noreferrer">Read the official calibration guide ↗</a></footer>
+      <footer><span>Unofficial calculation companion, based on the <a href="https://github.com/OrcaSlicer/OrcaSlicer/wiki/Calibration" target="_blank" rel="noreferrer">OrcaSlicer Calibration Guide</a>.</span><a href="https://github.com/OrcaSlicer/OrcaSlicer/wiki/Calibration" target="_blank" rel="noreferrer">Official guide ↗</a></footer>
     </main>
   )
 }
