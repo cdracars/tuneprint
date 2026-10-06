@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles.css'
 
-type Calculator = 'flow' | 'pressure' | 'volume'
+type Calculator = 'flow' | 'pressure' | 'volume' | 'temperature' | 'retraction' | 'vfa'
 
 const compact = (value: number, precision = 4) =>
   Number.isFinite(value) ? value.toFixed(precision).replace(/\.?(0+)$/, '') : '—'
@@ -99,6 +99,84 @@ function VolumeCalculator() {
   )
 }
 
+function TemperatureCalculator() {
+  const [lowest, setLowest] = useState('')
+  const [highest, setHighest] = useState('')
+  const low = Number(lowest)
+  const high = Number(highest)
+  const valid = lowest.trim() !== '' && highest.trim() !== '' && Number.isFinite(low) && Number.isFinite(high) && high >= low
+  const midpoint = (low + high) / 2
+
+  return (
+    <>
+      <p className="intro">After inspecting the temperature tower, enter the lowest and highest temperatures that both look clean. TunePrint gives you a balanced starting point, while keeping the visual call yours.</p>
+      <div className="fields">
+        <NumericInput label="Lowest clean temperature (°C)" hint="The first band without poor layer bonding or a rough surface" value={lowest} onChange={setLowest} step="1" />
+        <NumericInput label="Highest clean temperature (°C)" hint="The last band before stringing or surface quality worsens" value={highest} onChange={setHighest} step="1" />
+      </div>
+      <Result value={valid ? `${compact(midpoint, 0)}°C` : '—'} unit="balanced temperature to save" formula="(lowest clean temperature + highest clean temperature) ÷ 2" />
+      {valid && <div className="conservative"><span>When faster printing needs more melt</span><strong>{compact(high, 0)}°C</strong><small>Use the upper clean temperature as a deliberate starting point, then verify stringing and surface finish on a real part.</small></div>}
+      <p className="note">A temperature tower is a visual test. Do not treat a midpoint as proof that every model, speed, or cooling setup will print equally well.</p>
+    </>
+  )
+}
+
+function RetractionCalculator() {
+  const [distance, setDistance] = useState('')
+  const [gcodeValue, setGcodeValue] = useState('')
+  const shownValue = gcodeValue.trim() || distance.trim()
+  const valid = shownValue !== '' && Number(shownValue) >= 0 && Number.isFinite(Number(shownValue))
+
+  return (
+    <>
+      <p className="intro">Find the shortest clean section of Orca&apos;s retraction tower. Copy its exact value from the generated G-code comment when available—the generic retract command may not expose the tested amount.</p>
+      <div className="fields">
+        <NumericInput label="Clean tower value (mm)" hint="The shortest segment without visible stringing" value={distance} onChange={setDistance} step="0.01" />
+        <NumericInput label="G-code comment value (mm)" hint="Optional; overrides the tower reading when they differ" value={gcodeValue} onChange={setGcodeValue} step="0.01" />
+      </div>
+      <Result value={valid ? `${compact(Number(shownValue), 2)} mm` : '—'} unit="retraction distance to save" formula="use the exact value from the cleanest tower section" />
+      <div className="guidance"><strong>Starting-point check</strong><span>Direct drive commonly lands below 2 mm; Bowden setups often need more. Those are only ranges—let the printed tower decide.</span></div>
+      <p className="note">Save this under the filament&apos;s retraction settings, then recheck on a model with travel moves. Retraction length, speed, temperature, and filament moisture interact.</p>
+    </>
+  )
+}
+
+function rangesFromBlocks(blocks: string, start: number, step: number) {
+  const indexes = [...new Set(blocks.split(/[ ,]+/).map((value) => Number(value)).filter((value) => Number.isInteger(value) && value >= 0))].sort((a, b) => a - b)
+  if (!indexes.length || !Number.isFinite(start) || !Number.isFinite(step) || step <= 0) return []
+  const groups: number[][] = []
+  indexes.forEach((index) => {
+    const previous = groups.at(-1)
+    if (previous && index === previous.at(-1)! + 1) previous.push(index)
+    else groups.push([index])
+  })
+  return groups.map((group) => {
+    const from = start + group[0] * step
+    const to = start + group.at(-1)! * step
+    return from === to ? `${compact(from, 0)}` : `${compact(from, 0)}–${compact(to, 0)}`
+  })
+}
+
+function VfaCalculator() {
+  const [start, setStart] = useState('40')
+  const [step, setStep] = useState('5')
+  const [blocks, setBlocks] = useState('')
+  const ranges = useMemo(() => rangesFromBlocks(blocks, Number(start), Number(step)), [blocks, start, step])
+
+  return (
+    <>
+      <p className="intro">Mark the VFA tower blocks that show repeating vertical bands or resonance. TunePrint turns those block numbers into speed ranges you can avoid in the printer profile.</p>
+      <div className="fields">
+        <NumericInput label="Tower start speed (mm/s)" hint="The first block&apos;s speed" value={start} onChange={setStart} step="1" />
+        <NumericInput label="Speed step per block (mm/s)" hint="The increment used to generate the tower" value={step} onChange={setStep} step="1" />
+        <label className="field"><span>Bad block numbers</span><input inputMode="numeric" value={blocks} onChange={(event) => setBlocks(event.target.value)} placeholder="e.g. 2, 3, 7" /><small>Zero-indexed; separate individual blocks with commas or spaces</small></label>
+      </div>
+      <Result value={ranges.length ? `${ranges.join(', ')} mm/s` : '—'} unit="resonance avoidance speed range(s)" formula="block speed = tower start + (block number × speed step)" />
+      <p className="note">Paste the resulting ranges into your printer profile&apos;s resonance-avoidance speed range. A machine&apos;s maximum volumetric speed can prevent a tower from reaching its labelled speed, so confirm the test actually hit these values.</p>
+    </>
+  )
+}
+
 function Result({ value, unit, formula }: { value: string; unit: string; formula: string }) {
   return <section className="result" aria-live="polite"><span>Save this</span><strong>{value}</strong><em>{unit}</em><code>{formula}</code></section>
 }
@@ -109,6 +187,9 @@ function App() {
     { id: 'flow', label: 'Flow ratio', detail: 'Pass 1 / Pass 2' },
     { id: 'pressure', label: 'Pressure advance', detail: 'Tower method' },
     { id: 'volume', label: 'Max volumetric speed', detail: 'Flow tower' },
+    { id: 'temperature', label: 'Temperature', detail: 'Clean-band picker' },
+    { id: 'retraction', label: 'Retraction', detail: 'Tower result' },
+    { id: 'vfa', label: 'VFA avoidance', detail: 'Speed ranges' },
   ]
   return (
     <main>
@@ -152,9 +233,12 @@ function App() {
           {active === 'flow' && <FlowCalculator />}
           {active === 'pressure' && <PressureCalculator />}
           {active === 'volume' && <VolumeCalculator />}
+          {active === 'temperature' && <TemperatureCalculator />}
+          {active === 'retraction' && <RetractionCalculator />}
+          {active === 'vfa' && <VfaCalculator />}
         </article>
       </section>
-      <section className="guide"><h2>What calculators can—and can&apos;t—decide</h2><div><p><strong>Use your eyes for:</strong> temperature, retraction, tolerance, VFA, and the best-looking band of a calibration print.</p><p><strong>Use this page for:</strong> the small, easy-to-mistype calculations after you&apos;ve made that judgment.</p></div></section>
+      <section className="guide"><h2>What TunePrint can—and can&apos;t—decide</h2><div><p><strong>Use your eyes for:</strong> the clean temperature band, shortest-stringing retraction section, VFA artifacts, tolerance, and the best-looking calibration block.</p><p><strong>Use this page for:</strong> turning that visual judgment into a profile value or a range without easy-to-mistype follow-up math.</p></div></section>
       <section className="support" aria-label="Support TunePrint">
         <p>This tool stays free and runs entirely in your browser.</p>
         <a href="https://ko-fi.com/cdracars66494" target="_blank" rel="noreferrer"><img src="https://storage.ko-fi.com/cdn/cup-border.png" alt="" />If it saved you time, leave a tip on Ko-fi ↗</a>
