@@ -33,3 +33,7 @@ No calibration inputs are sent to a server.
 
 If TunePrint is useful to you, you can support its continued upkeep on
 [Ko-fi](https://ko-fi.com/cdracars66494).
+
+## License
+
+[MIT](LICENSE)
