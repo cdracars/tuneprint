@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { createRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 import './styles.css'
 
 type Calculator = 'flow' | 'pressure' | 'volume' | 'temperature' | 'retraction' | 'vfa'
@@ -181,7 +181,7 @@ function Result({ value, unit, formula }: { value: string; unit: string; formula
   return <section className="result" aria-live="polite"><span>Save this</span><strong>{value}</strong><em>{unit}</em><code>{formula}</code></section>
 }
 
-function App() {
+export function App() {
   const [active, setActive] = useState<Calculator>('flow')
   const calculators: { id: Calculator; label: string; detail: string }[] = [
     { id: 'flow', label: 'Flow ratio', detail: 'Pass 1 / Pass 2' },
@@ -248,4 +248,11 @@ function App() {
   )
 }
 
-createRoot(document.getElementById('root')!).render(<App />)
+if (typeof document !== 'undefined') {
+  const rootElement = document.getElementById('root')!
+  if (rootElement.hasChildNodes()) {
+    hydrateRoot(rootElement, <App />)
+  } else {
+    createRoot(rootElement).render(<App />)
+  }
+}
